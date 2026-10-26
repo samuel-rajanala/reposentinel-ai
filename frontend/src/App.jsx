@@ -17,99 +17,38 @@ const TABS = [
   ["verify", "CI verification", Activity]
 ];
 
-function NetworkCanvas() {
-  const canvasRef = useRef(null);
-  const wrapRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const wrap = wrapRef.current;
-    if (!canvas || !wrap) return;
-    const ctx = canvas.getContext("2d", { alpha: true });
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let width = 0, height = 0, raf = 0, visible = true, pointerX = 0, pointerY = 0;
-    let scroll = 0, last = 0;
-    const nodes = Array.from({ length: 54 }, (_, i) => ({
-      x: (i * 73 % 997) / 997, y: (i * 137 % 991) / 991,
-      r: 1.2 + (i % 4) * .45, phase: i * .73
-    }));
-    function resize() {
-      const rect = wrap.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = rect.width; height = rect.height;
-      canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    function onPointer(e) {
-      const r = wrap.getBoundingClientRect();
-      pointerX = (e.clientX - r.left) / Math.max(1, r.width) - .5;
-      pointerY = (e.clientY - r.top) / Math.max(1, r.height) - .5;
-    }
-    function onScroll() {
-      const r = wrap.getBoundingClientRect();
-      scroll = Math.max(0, Math.min(1, (window.innerHeight * .72 - r.top) / (r.height + window.innerHeight * .2)));
-    }
-    const observer = new IntersectionObserver(entries => { visible = entries[0].isIntersecting; });
-    observer.observe(wrap);
-    function draw(time) {
-      raf = requestAnimationFrame(draw);
-      if (!visible || document.hidden || width === 0) return;
-      if (reduced && time - last < 100) return;
-      last = time;
-      ctx.clearRect(0, 0, width, height);
-      const px = pointerX * 15, py = pointerY * 15;
-      const cx = width * (.5 + px / Math.max(width, 1));
-      const cy = height * (.49 + py / Math.max(height, 1));
-      const scale = 1.05 - scroll * .2;
-      const points = nodes.map((n, i) => {
-        const wave = reduced ? 0 : Math.sin(time * .00045 + n.phase) * 5;
-        return { x: cx + (n.x - .5) * width * .78 * scale + px + wave,
-          y: cy + (n.y - .5) * height * .72 * scale + py + wave * .7, r: n.r };
-      });
-      ctx.lineWidth = 1;
-      for (let i = 0; i < points.length; i++) {
-        for (let j = i + 1; j < points.length; j++) {
-          const dx = points[i].x - points[j].x, dy = points[i].y - points[j].y;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < Math.min(width, height) * .19) {
-            ctx.strokeStyle = "rgba(183,220,107," + ((1 - d / (Math.min(width, height) * .19)) * .24) + ")";
-            ctx.beginPath(); ctx.moveTo(points[i].x, points[i].y); ctx.lineTo(points[j].x, points[j].y); ctx.stroke();
-          }
-        }
-      }
-      points.forEach((p, i) => {
-        const pulse = reduced ? 1 : .7 + Math.sin(time * .002 + i) * .3;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * pulse, 0, Math.PI * 2);
-        ctx.fillStyle = i % 7 === 0 ? "#d5ed91" : "rgba(205,220,176,.78)"; ctx.fill();
-      });
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.scale(1 + scroll * .12, 1 + scroll * .12);
-      ctx.strokeStyle = "rgba(204,231,142,.76)"; ctx.lineWidth = 1.3;
-      ctx.beginPath();
-      ctx.moveTo(0, -height * .17); ctx.lineTo(width * .13, -height * .1);
-      ctx.lineTo(width * .11, height * .08); ctx.quadraticCurveTo(0, height * .22, -width * .11, height * .08);
-      ctx.lineTo(-width * .13, -height * .1); ctx.closePath(); ctx.stroke();
-      ctx.fillStyle = "rgba(183,220,107,.08)"; ctx.fill();
-      ctx.restore();
-    }
-    resize(); onScroll();
-    const ro = new ResizeObserver(resize); ro.observe(wrap);
-    window.addEventListener("resize", resize); window.addEventListener("scroll", onScroll, { passive: true });
-    wrap.addEventListener("pointermove", onPointer);
-    raf = requestAnimationFrame(draw);
-    return () => {
-      cancelAnimationFrame(raf); observer.disconnect(); ro.disconnect();
-      window.removeEventListener("resize", resize); window.removeEventListener("scroll", onScroll);
-      wrap.removeEventListener("pointermove", onPointer);
-    };
-  }, []);
-  return <div className="network-stage" ref={wrapRef} aria-label="Animated network shield visualization">
-    <div className="stage-grid" />
-    <canvas ref={canvasRef} />
-    <div className="stage-orbit orbit-a" /><div className="stage-orbit orbit-b" />
-    <div className="stage-readout"><span><i /> LIVE NETWORK MODEL</span><b>THREAT SURFACE / 01</b><small>MONITOR · MAP · MITIGATE</small></div>
-    <div className="stage-coordinate">37° 46' 49.3" N<br/>122° 25' 09.8" W</div>
-  </div>;
+function CyberFilmCanvas(){
+ const canvasRef=useRef(null),wrapRef=useRef(null);
+ useEffect(()=>{
+  const canvas=canvasRef.current,wrap=wrapRef.current;if(!canvas||!wrap)return;
+  const ctx=canvas.getContext("2d",{alpha:false}),story=wrap.closest(".story");
+  const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let w=0,h=0,dpr=1,raf=0,visible=true,p=0,px=0,py=0,tx=0,ty=0,last=0;
+  const rand=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)};
+  const roots=Array.from({length:18},(_,i)=>({a:i*Math.PI*2/18+(rand(i)-.5)*.15,id:i}));
+  function resize(){const r=wrap.getBoundingClientRect();w=r.width;h=r.height;dpr=Math.min(devicePixelRatio||1,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+  function measure(){if(!story)return;const r=story.getBoundingClientRect();p=Math.max(0,Math.min(1,-r.top/Math.max(1,r.height-innerHeight)));const op=v=>Math.max(0,Math.min(1,1-Math.abs(p-v)/.19));story.style.setProperty("--beat-one",op(.06));story.style.setProperty("--beat-two",op(.5));story.style.setProperty("--beat-three",op(.94))}
+  function pointer(e){const r=wrap.getBoundingClientRect();tx=(e.clientX-r.left)/r.width-.5;ty=(e.clientY-r.top)/r.height-.5}
+  const observer=new IntersectionObserver(es=>visible=es[0].isIntersecting);observer.observe(wrap);
+  function segment(x,y,X,Y,alpha,width){ctx.strokeStyle="rgba(190,225,116,"+alpha+")";ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(X,Y);ctx.stroke()}
+  function draw(t){raf=requestAnimationFrame(draw);if(!visible||document.hidden||!w||(reduced&&t-last<100))return;last=t;px+=(tx-px)*.05;py+=(ty-py)*.05;
+   ctx.fillStyle="#10110d";ctx.fillRect(0,0,w,h);
+   const progress=reduced?.55:p,zoom=progress<.48?1.65-progress*1.75:.81+(progress-.48)*1.25,cx=w*(.5+px*.04),cy=h*(.52+py*.04),R=Math.min(w,h)*.4;
+   ctx.save();ctx.translate(cx,cy);ctx.scale(zoom,zoom);
+   ctx.strokeStyle="rgba(230,236,207,.055)";ctx.lineWidth=1;for(let i=1;i<=6;i++){ctx.beginPath();ctx.arc(0,0,R*i/6,0,Math.PI*2);ctx.stroke()}
+   for(let i=0;i<32;i++){const a=i*Math.PI/16;segment(Math.cos(a)*R*.9,Math.sin(a)*R*.9,Math.cos(a)*R,Math.sin(a)*R,.11,.7)}
+   const growth=Math.max(0,Math.min(1,(progress-.015)/.72)),nodes=[];
+   roots.forEach(root=>{let x=0,y=0,a=root.a,len=R*(.12+rand(root.id+40)*.08);for(let d=0;d<6;d++){const bend=(rand(root.id*21+d)-.5)*.65,X=x+Math.cos(a+bend)*len,Y=y+Math.sin(a+bend)*len,threshold=(d+rand(root.id+d)*.5)/6,reveal=Math.max(0,Math.min(1,(growth-threshold)*7));if(reveal>0){segment(x,y,x+(X-x)*reveal,y+(Y-y)*reveal,.2+reveal*.48,1.2-d*.12);if(reveal>.9)nodes.push({x:X,y:Y,id:root.id*10+d})}x=X;y=Y;a+=bend;len*=.7;if(growth<threshold)break}});
+   nodes.forEach((n,i)=>{ctx.beginPath();ctx.arc(n.x,n.y,1.4*(reduced?1:.7+.3*Math.sin(t*.002+n.id)),0,Math.PI*2);ctx.fillStyle=i%5===0?"#e0f4a2":"#9ebc62";ctx.fill()});
+   const pulse=reduced?1:1+Math.sin(t*.0013)*.025;ctx.save();ctx.scale(pulse,pulse);ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3-Math.PI/2,x=Math.cos(a)*47,y=Math.sin(a)*47;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.fillStyle="rgba(174,213,98,.1)";ctx.fill();ctx.strokeStyle="#c5e477";ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.moveTo(-17,-1);ctx.lineTo(-4,13);ctx.lineTo(20,-15);ctx.strokeStyle="#e3f0bc";ctx.lineWidth=3;ctx.lineCap="round";ctx.lineJoin="round";ctx.stroke();ctx.restore();
+   ctx.beginPath();ctx.arc(0,0,72+growth*R*.4,0,Math.PI*2);ctx.strokeStyle="rgba(197,228,119,"+(.12+growth*.24)+")";ctx.setLineDash([3,10]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+   if(!reduced){const sy=(t*.025)%(h+80)-40,g=ctx.createLinearGradient(0,sy-24,0,sy+24);g.addColorStop(0,"rgba(197,228,119,0)");g.addColorStop(.5,"rgba(197,228,119,.06)");g.addColorStop(1,"rgba(197,228,119,0)");ctx.fillStyle=g;ctx.fillRect(0,sy-24,w,48)}
+   ctx.fillStyle="rgba(197,228,119,.6)";ctx.font="9px monospace";ctx.fillText("THREAT SURFACE / "+String(Math.round(growth*100)).padStart(3,"0")+"%",22,h-24);
+  }
+  resize();measure();const ro=new ResizeObserver(resize);ro.observe(wrap);window.addEventListener("resize",resize);window.addEventListener("scroll",measure,{passive:true});wrap.addEventListener("pointermove",pointer);raf=requestAnimationFrame(draw);
+  return()=>{cancelAnimationFrame(raf);observer.disconnect();ro.disconnect();window.removeEventListener("resize",resize);window.removeEventListener("scroll",measure);wrap.removeEventListener("pointermove",pointer);["--beat-one","--beat-two","--beat-three"].forEach(k=>story?.style.removeProperty(k))}
+ },[]);
+ return <div className="film-stage" ref={wrapRef} aria-label="Scroll-controlled cybersecurity network animation"><canvas ref={canvasRef}/><div className="film-vignette"/><div className="film-label"><span><i/> REPOSENTINEL / LIVE THREAT MODEL</span><b>SCROLL TO GROW THE SIGNAL</b></div><div className="film-coordinates">NODE CLUSTER 07<br/>ENCRYPTED · MONITORED · VERIFIED</div></div>
 }
 
 function SectionTag({ children }) { return <div className="section-tag"><span />{children}</div>; }
@@ -170,12 +109,12 @@ export default function App() {
 
     <main id="top">
       <section className="story" id="story">
+        <div className="story-film"><CyberFilmCanvas/></div>
         <div className="story-copy">
-          <article className="story-beat beat-one"><SectionTag>01 / SEE THE WHOLE SYSTEM</SectionTag><h1>Security that<br/><em>takes root.</em></h1><p>Every repository has a living structure. RepoSentinel maps the code, surfaces risk, and helps teams see what needs attention.</p><button className="text-link" onClick={() => go("workbench")}>Explore your repository <ArrowRight size={16}/></button></article>
-          <article className="story-beat beat-two"><SectionTag>02 / FIND WHAT MATTERS</SectionTag><h2>Signals, not<br/><em>more noise.</em></h2><p>Turn issues, source evidence, and static checks into a clearer picture of where to focus next.</p><button className="text-link" onClick={() => go("capabilities")}>See the capabilities <ArrowRight size={16}/></button></article>
-          <article className="story-beat beat-three"><SectionTag>03 / MOVE WITH INTENT</SectionTag><h2>From insight<br/>to <em>action.</em></h2><p>Use Gemma to plan a contribution and draft a patch proposal — with human review always in control.</p><button className="text-link" onClick={() => go("workbench")}>Open the workbench <ArrowRight size={16}/></button></article>
+          <article className="story-beat beat-one"><SectionTag>01 / MAP THE ATTACK SURFACE</SectionTag><h1>Security that<br/><em>takes root.</em></h1><p>Every repository has a living structure. RepoSentinel maps the code, surfaces risk, and helps teams see what needs attention.</p><button className="text-link" onClick={() => go("workbench")}>Explore your repository <ArrowRight size={16}/></button></article>
+          <article className="story-beat beat-two"><SectionTag>02 / TRACE THE SIGNAL</SectionTag><h2>Signals, not<br/><em>more noise.</em></h2><p>Watch a connected codebase unfold into its dependencies, exposed surfaces, and security signals.</p><button className="text-link" onClick={() => go("capabilities")}>See the capabilities <ArrowRight size={16}/></button></article>
+          <article className="story-beat beat-three"><SectionTag>03 / STRENGTHEN THE SYSTEM</SectionTag><h2>From insight<br/>to <em>action.</em></h2><p>Turn findings into a clear plan and a patch proposal — with human review always in control.</p><button className="text-link" onClick={() => go("workbench")}>Open the workbench <ArrowRight size={16}/></button></article>
         </div>
-        <div className="story-visual"><NetworkCanvas/><div className="visual-caption"><span>REPOSENTINEL / FIELD NOTES 001</span><span>SCROLL TO EXPLORE ↓</span></div></div>
         <div className="story-rail"><span>01</span><i/><i/><i/><span>03</span></div>
       </section>
 
