@@ -17,7 +17,7 @@ Python 3.11+, Node.js 20+, and a Google AI Studio API key. A GitHub token is opt
 ## Run locally
 
 Backend terminal:
-    cd backend
+    cd reposentinel/backend
     python -m venv .venv
     # Windows PowerShell: .venv\Scripts\Activate.ps1
     # macOS/Linux: source .venv/bin/activate
@@ -27,7 +27,7 @@ Backend terminal:
     uvicorn app.main:app --reload --port 8000
 
 Frontend terminal:
-    cd frontend
+    cd reposentinel/frontend
     npm install
     npm run dev
 
