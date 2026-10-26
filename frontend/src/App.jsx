@@ -75,6 +75,31 @@ export default function App() {
     issue_body: issue?.issue?.body || "", files
   }), [repoUrl, issueNo, issue]);
   useEffect(() => { api.health().then(setHealth).catch(() => setHealth({ status: "offline" })); }, []);
+
+  useEffect(() => {
+    const targets = document.querySelectorAll(
+      ".section-heading, .service-card, .signal-stats > div, .method-steps article, .repo-connect, .closing-cta h2"
+    );
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced || !("IntersectionObserver" in window)) {
+      targets.forEach((el) => el.classList.add("reveal-visible"));
+      return;
+    }
+    targets.forEach((el, index) => {
+      el.classList.add("reveal-on-scroll");
+      el.style.setProperty("--reveal-delay", (index % 4) * 90 + "ms");
+    });
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("reveal-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.14, rootMargin: "0px 0px -45px 0px" });
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
   async function run(key, fn) {
     setLoading(key); setError("");
     try { await fn(); } catch (e) { setError(e.message || "Request failed"); }
